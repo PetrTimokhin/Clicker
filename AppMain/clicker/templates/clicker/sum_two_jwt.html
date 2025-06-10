@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Сумма двух чисел</title>
+  <script>
+    function calculateSum() {
+      const number1 = document.getElementById("number1").value;
+      const number2 = document.getElementById("number2").value;
+
+      // Получаем access token из localStorage
+      const accessToken = localStorage.getItem('access_token');
+
+      if (!accessToken) {
+        alert("Необходимо войти в систему.");
+        return; // Или перенаправить на страницу входа
+      }
+
+      fetch(`http://127.0.0.1:8000/api/v2/sum/?number1=${number1}&number2=${number2}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}` // добавляем токен в заголовок
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Если access token недействителен, пробуем обновить его с помощью refresh token
+            refreshToken();
+          } else {
+            throw new Error(`Ошибка запроса: ${response.status}`);
+          }
+        }
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById("result").innerText = "Сумма: " + data.message;
+      })
+      .catch(error => {
+        console.error("Ошибка:", error);
+        document.getElementById("result").innerText = "Ошибка: " + error;
+      });
+    }
+
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch("http://127.0.0.1:8000/api/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username, password: password }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          localStorage.setItem("access_token", data.access);
+          localStorage.setItem("refresh_token", data.refresh);
+          alert("Успешный вход!");
+          // Можно добавить код для скрытия формы входа и отображения формы для вычислений
+          document.getElementById("loginForm").style.display = "none";
+          document.getElementById("calcForm").style.display = "block";
+        })
+        .catch((error) => {
+          console.error("Ошибка входа:", error);
+          alert("Ошибка входа. Проверьте свои учетные данные.");
+        });
+    }
+
+    function refreshToken() {
+      const refreshToken = localStorage.getItem('refresh_token');
+
+      if (!refreshToken) {
+        alert("Отсутствует refresh token. Необходимо войти в систему.");
+        return;
+      }
+
+      fetch("http://127.0.0.1:8000/api/token/refresh/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Ошибка обновления токена: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        localStorage.setItem('access_token', data.access);
+        // Повторно вызываем calculateSum после обновления токена
+        calculateSum();
+      })
+      .catch(error => {
+        console.error("Ошибка обновления токена:", error);
+        alert("Ошибка обновления токена. Необходимо войти в систему.");
+        // Можно перенаправить пользователя на страницу входа
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("calcForm").style.display = "none";
+      });
+    }
+
+  </script>
+</head>
+<body>
+
+  <div id="loginForm">
+    <h2>Вход</h2>
+    <label for="username">Имя пользователя:</label><br>
+    <input type="text" id="username" name="username"><br><br>
+    <label for="password">Пароль:</label><br>
+    <input type="password" id="password" name="password"><br><br>
+    <button onclick="login()">Войти</button>
+  </div>
+
+  <div id="calcForm" style="display:none;">
+    <h2>Калькулятор суммы</h2>
+    <label for="number1">Число 1:</label>
+    <input type="number" id="number1" name="number1"><br><br>
+
+    <label for="number2">Число 2:</label>
+    <input type="number" id="number2" name="number2"><br><br>
+
+    <button onclick="calculateSum()">Получить сумму</button><br><br>
+
+    <p id="result"></p>
+  </div>
+
+
+</body>
+</html>

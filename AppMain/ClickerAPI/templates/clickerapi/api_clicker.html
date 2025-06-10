@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Clicker</title>
+  <style>
+          body {
+            background-color: powderblue;
+            font-size: 30px;
+            text-align: center;
+          }
+          #button {
+            width: 200px;
+            height: 200px;
+            background-color: #0597e6;
+            border-radius: 100px;
+            margin: 0 auto;
+            line-height: 200px;
+            user-select: none;
+            margin-top: 100px;
+            cursor: pointer;
+          }
+          #score {
+            margin-top: 50px;
+            font-size: 60px;
+            font-weight: bold;
+            color: green;
+          }
+  </style>
+<body>
+
+  <div id="score">0</div>
+  <div id="button">CLICK ME</div>
+
+  <script>
+    const scoreElement = document.getElementById('score');
+    const buttonElement = document.getElementById('button');
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/clicks/'; // Замените на адрес вашего API
+
+    // Функция для получения текущего счета
+    async function getScore() {
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            scoreElement.textContent = data.message;
+        } catch (error) {
+            console.error('Error fetching score:', error);
+            scoreElement.textContent = 'no connection with server';
+        }
+    }
+
+    // Функция для отправки запроса на увеличение счета
+    async function incrementScore() {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) {
+                alert('Ошибка: ' + response.status);
+                return;
+            }
+
+            const data = await response.json();
+            scoreElement.textContent = data.message;
+
+        } catch (error) {
+            console.error('Error incrementing score:', error);
+            alert('Ошибка при увеличении счета!');
+        }
+    }
+
+    // Обработчик клика по кнопке
+    buttonElement.addEventListener('click', incrementScore);
+
+    // Инициализация при загрузке страницы
+    getScore();
+
+  </script>
+</body>
+</html>

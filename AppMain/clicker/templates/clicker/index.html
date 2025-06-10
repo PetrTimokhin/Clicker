@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Age Updater</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Update Age</h1>
+        <p>Welcome, </p>
+        <p>Current Age: <span id="current-age"></span></p>
+
+        <label for="new-age">New Age:</label>
+        <input type="number" id="new-age" name="new-age">
+        <button id="update-button">Update</button>
+
+        <script>
+            const currentAgeSpan = document.getElementById('current-age');
+            const newAgeInput = document.getElementById('new-age');
+            const updateButton = document.getElementById('update-button');
+
+            async function getAge() {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/api/v1/sum2/');
+                    const data = await response.json();
+                    currentAgeSpan.textContent = data.age;
+                    newAgeInput.value = data.age;
+                }
+                 catch (error) {
+                    console.error('Error getting age:', error);
+                    currentAgeSpan.textContent = 'Error loading age.';
+                }
+            }
+
+            async function updateAge() {
+                const newAge = newAgeInput.value;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').content; // Получаем CSRF токен
+
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/api/v1/sum2/', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken  // Добавляем CSRF токен в заголовок
+                        },
+                        body: JSON.stringify({ age: newAge })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        currentAgeSpan.textContent = data.age;
+                        alert('Age updated successfully!');
+                    } else {
+                        console.error('Error updating age:', response.status);
+                        alert('Error updating age.');
+                    }
+                } catch (error) {
+                    console.error('Error updating age:', error);
+                    alert('Error updating age.');
+                }
+            }
+
+            getAge();
+            updateButton.addEventListener('click', updateAge);
+
+        </script>
+</body>
+</html>

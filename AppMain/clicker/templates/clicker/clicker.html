@@ -1,0 +1,67 @@
+<!--{% load static %}-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+          body {
+            background-color: powderblue;
+            font-size: 30px;
+            text-align: center;
+          }
+          #button {
+            width: 200px;
+            height: 200px;
+            background-color: #0597e6;
+            border-radius: 100px;
+            margin: 0 auto;
+            line-height: 200px;
+            user-select: none;
+            margin-top: 100px;
+            cursor: pointer;
+          }
+          #score {
+            margin-top: 50px;
+            font-size: 60px;
+            font-weight: bold;
+            color: green;
+          }
+          #button2 {
+            background-color: green;
+            border-radius: 10px;
+            padding: 15px 15px;
+            cursor: pointer;
+            margin-top: 50px;
+          }
+
+    </style>
+</head>
+<body>
+    <div id="score"></div>
+    <div id="button">CLICK ME</div>
+    <form class="form" action="" method="post">
+        {% csrf_token %}
+        <input id="send_teg" type="hidden" name="value" required>
+        <input id="button2" type="submit" value="Сохранить результат">
+    </form>
+
+    <script>
+    <!--  let counter = 0;-->
+
+      let counter = "{{ clicks|escapejs }}";
+      counter = parseInt(counter)
+      document.getElementById('score').innerText = counter;
+
+      document.getElementById('button').onclick = () => {
+        counter = counter + 1;
+        document.getElementById('score').innerText = counter;
+      };
+      document.getElementById('button2').onclick = () => {
+        document.getElementById("send_teg").value = counter;
+      };
+
+    </script>
+</body>
+</html>
