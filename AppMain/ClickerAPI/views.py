@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from ClickerAPI.models import ClickCount
+from ClickerAPI.models import ClickCount, Stuff
 from AppMain.logs.log import logger
 
 
@@ -11,12 +11,18 @@ class ClickerView(APIView):
     def get(self, request):  # название не менять, это обработчик get запросов
         ip = get_client_ip(request)
         user = ClickCount.objects.filter(ip=ip).first()
+        print('user=', user)
+        stuff_status = Stuff.objects.get(stuff_name='Gamer')
         if not user:
-            user = ClickCount.objects.create(ip=ip, clicks=0)
+
+            user = ClickCount.objects.create(ip=ip,
+                                             clicks=0,
+                                             stuff_status=stuff_status)
         clicks = user.clicks
         logger.error(f'IP: {ip};'
                      f' метод get; '
                      f'Передаваемый параметр: {clicks}; '
+                     f'stuff_status: {stuff_status} '
                      )
         return Response({'message': str(clicks)})
 
